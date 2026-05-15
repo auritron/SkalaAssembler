@@ -12,7 +12,7 @@
 
 ## M-instruction
 - Memory Management  
-- OPCODE REG/ADR ADR/REG  
+- OPCODE REG ADR
 - LOAD, SEND  
 
 ## J-instruction
