@@ -1,4 +1,5 @@
 #include "parser.hpp"
+#include "../overload.hpp"
 
 namespace parser_mod {
 
@@ -344,7 +345,6 @@ namespace parser_mod {
         
         case Action::Emit:
             
-            
             switch (prev_state) {
                 case State::Idn:
                     try {
@@ -390,7 +390,6 @@ namespace parser_mod {
                 default:
                     std::abort();
             }
-
             
             if (!cur_inst.push_token(std::move(token))) return std::unexpected(ParseErr::InstructionTooLong); //move happens here 
             buffer.clear();
@@ -436,6 +435,17 @@ namespace parser_mod {
         prev_state = cur_state;
 
         return {};
+    }
+
+    //helpers
+    bool Parser::inst_type_already_opcode() {
+        switch (cur_inst.inst_type) {
+            case instruction_mod::InstType::LBL:
+            case instruction_mod::InstType::INV:
+                return false;
+            default:
+                return true;
+        }
     }
 
 }

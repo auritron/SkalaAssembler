@@ -81,19 +81,21 @@ namespace analyzer_mod {
         label_table{}
     { }
 
-    std::expected<void, SemErr> Analyzer::scout_lbl(const instruction_mod::Inst& inst) {
-        const auto& first_token = inst.token_arr[0];
+    //scouting labels as first pass
+    std::expected<void, SemErr> Analyzer::scout_lbl(instruction_mod::Inst& inst) {
+        auto& first_token{inst.token_arr[0]};
         if (!first_token.has_value()) { //check if first token exists, should not happen ideally but still
             return std::unexpected(SemErr::MissingOpCodeError);
         } else {
             switch (first_token->token_type) {
                 case TT::Label:
                     return std::visit(overload{
-                        [this](std::string val) -> std::expected<void, SemErr> {
+                        [this, &inst](std::string val) -> std::expected<void, SemErr> {
                             auto [_, result] = label_table.insert(val);
                             if (!result) {
                                 return std::unexpected(SemErr::LabelAlreadyExists);
                             }
+                            inst.inst_type = instruction_mod::InstType::LBL;
                             return {};
                         },
                         [this](auto) -> std::expected<void, SemErr> {
@@ -109,7 +111,8 @@ namespace analyzer_mod {
         return {};
     }
 
-    std::expected<void, SemErr> Analyzer::validate_token(const instruction_mod::Token& token) const { //only checked for positions 2 to INSTSIZE
+    //validate specific tokens to see if they are within constraints, only checked for positions 2 to INSTSIZE
+    std::expected<void, SemErr> Analyzer::validate_token(const instruction_mod::Token& token) const {
         return std::visit(overload{
             [&token](OpCode) -> std::expected<void, SemErr> { //shouldn't happen ideally
                 return std::unexpected(SemErr::InvalidOpCodePosition);
@@ -123,7 +126,7 @@ namespace analyzer_mod {
                             return {};
                         }
                     case TT::Immediate:
-                        if (tkn_i < 0 || tkn_i > instruction_mod::Inst::MAX_IMM_VAL) { //add limit of 15 for shifting
+                        if (tkn_i < 0 || tkn_i > instruction_mod::Inst::MAX_IMM_VAL) {
                             return std::unexpected(SemErr::ImmediateOutOfRange);
                         } else {
                             return {};
@@ -156,7 +159,8 @@ namespace analyzer_mod {
         }, token.value);
     }
 
-    std::expected<void, SemErr> Analyzer::validate_opcode(const instruction_mod::Inst& inst, instruction_mod::OpCode opcode) const {
+    //validates opcodes and assigns them respective types accordingly
+    std::expected<void, SemErr> Analyzer::validate_opcode(instruction_mod::Inst& inst, instruction_mod::OpCode opcode) const {
 
         const auto opc_pattern = instruction_fmt.find(opcode);
         if (opc_pattern == instruction_fmt.end()) {
@@ -167,14 +171,23 @@ namespace analyzer_mod {
                 const auto& cur_token = inst.token_arr[tkn];
                 const auto& cur_target = (opc_pattern->second)[tkn-1];
 
-                if (cur_token.has_value() != cur_target.has_value()) {
+                if (cur_token.has_value() != cur_target.has_value()) { // one is null and the other is not
                     return std::unexpected(SemErr::IncorrectOperandFmt);
                 } else if (cur_token.has_value()) {
                     if (!cur_target->token_type_exists(cur_token->token_type)) {
                         return std::unexpected(SemErr::IncorrectOperandFmt);
                     } else {
                         const auto& tkn_val_res = validate_token(cur_token.value());
-                        if (!tkn_val_res) return tkn_val_res;
+                        if (!tkn_val_res) { 
+                            return tkn_val_res;
+                        } else {
+                            const auto cur_inst_type = instruction_mod::instruction_types.find(opcode);
+                            if (cur_inst_type == instruction_mod::instruction_types.end()) {
+                                return std::unexpected(SemErr::UnknownSemanticError);
+                            } else {
+                                inst.inst_type = cur_inst_type->second;
+                            }
+                        }
                     }
                 }
 
@@ -184,7 +197,8 @@ namespace analyzer_mod {
         
     }
 
-    std::expected<void, SemErr> Analyzer::analyze(const instruction_mod::Inst& inst) const {
+    //anal
+    std::expected<void, SemErr> Analyzer::analyze(instruction_mod::Inst& inst) const {
         const auto& first_token = inst.token_arr[0];
         if (!first_token.has_value()) { //check if first token exists, should not happen ideally but still
             return std::unexpected(SemErr::MissingOpCodeError);
@@ -192,7 +206,7 @@ namespace analyzer_mod {
             switch(first_token->token_type) {
                 case TT::OpCode: {
                     auto is_matched = std::visit(overload{
-                        [this, inst](instruction_mod::OpCode oc) -> std::expected<void, SemErr> {
+                        [this, &inst](instruction_mod::OpCode oc) -> std::expected<void, SemErr> {
                             return validate_opcode(inst, oc);
                         },
                         [](auto a) -> std::expected<void, SemErr> { 

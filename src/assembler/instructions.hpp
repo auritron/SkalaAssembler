@@ -77,8 +77,22 @@ namespace instruction_mod {
 
     };
 
-    // Opcode : number of args
+    enum class InstType {
+        R,
+        I,
+        RI, //either R or I, to be determined by analyzer
+        M,
+        S,
+        J,
+        N,
+        LBL, //labels skipped by codegen
+        INV, //invalid
+    };
+
     extern const std::unordered_map<std::string_view, OpCode> instruction_map; //defined in instruction.cpp
+    
+    // Opcode : Instruction Type
+    extern const std::unordered_map<OpCode, InstType> instruction_types; //defined in instruction.cpp
 
     class Token {
 
@@ -119,6 +133,7 @@ namespace instruction_mod {
             static constexpr int MAX_ADDR_VAL = 65535;
             static constexpr int MAX_IMM_VAL = 65535;
             size_t used_size;
+            InstType inst_type;
             std::array<std::optional<Token>, INST_SIZE> token_arr;
 
             Inst();

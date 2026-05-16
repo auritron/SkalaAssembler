@@ -40,6 +40,52 @@ namespace instruction_mod {
         { "CLR",    OpCode::CLR },
     };
 
+    const std::unordered_map<OpCode, InstType> instruction_types {
+        // memory
+        { OpCode::LOAD,   InstType::M  },
+        { OpCode::SEND,   InstType::M  },
+
+        // RI (either R or I, determined by analyzer)
+        { OpCode::SET,    InstType::RI },
+        { OpCode::NOT,    InstType::RI },
+        { OpCode::AND,    InstType::RI },
+        { OpCode::OR,     InstType::RI },
+        { OpCode::XOR,    InstType::RI },
+        { OpCode::STL,    InstType::RI },
+        { OpCode::STR,    InstType::RI },
+        { OpCode::RTL,    InstType::RI },
+        { OpCode::RTR,    InstType::RI },
+        { OpCode::NEG,    InstType::RI },
+        { OpCode::ADD,    InstType::RI },
+        { OpCode::SUB,    InstType::RI },
+        { OpCode::MUL,    InstType::RI },
+        { OpCode::DIV,    InstType::RI },
+        { OpCode::MOD,    InstType::RI },
+        { OpCode::CMP,    InstType::RI },
+
+        // jump/branch
+        { OpCode::GOTO,   InstType::J  },
+        { OpCode::WEQ,    InstType::J  },
+        { OpCode::WNE,    InstType::J  },
+        { OpCode::WGT,    InstType::J  },
+        { OpCode::WLT,    InstType::J  },
+        { OpCode::WCY,    InstType::J  },
+        { OpCode::WOV,    InstType::J  },
+        { OpCode::WDZ,    InstType::J  },
+        { OpCode::CAL,    InstType::J  },
+
+        // single register
+        { OpCode::PUSH,   InstType::S  },
+        { OpCode::POP,    InstType::S  },
+        { OpCode::PRINT,  InstType::S  },
+        { OpCode::PRINTC, InstType::S  },
+
+        // no operands
+        { OpCode::RET,    InstType::N  },
+        { OpCode::END,    InstType::N  },
+        { OpCode::CLR,    InstType::N  },
+    };
+
     Token::Token() : 
         token_type{TokenType::Invalid}, value{0} { }
     Token::Token(TokenType type, OpCode val) :
@@ -66,7 +112,8 @@ namespace instruction_mod {
 
     Inst::Inst() :
         token_arr{std::nullopt},
-        used_size{0}
+        used_size{0},
+        inst_type{InstType::INV}
     { }
 
     bool Inst::push_token(Token&& token) {

@@ -49,8 +49,8 @@ void Assembler::assemble_prog(instruction_mod::Pipeline& pipeline, const std::st
 void Assembler::dbg_display_tokens(const instruction_mod::Pipeline& pipeline) const {
 
     for (int i{0}; i < pipeline.size(); ++i) {
-        std::cout << "Instruction No. " << i + 1 << ": ";
         const auto& cur_inst{pipeline[i]};
+        std::cout << "Instruction No. " << i + 1 << "(" << magic_enum::enum_name(cur_inst.inst_type) << ")" << ": ";
         for (int j{0}; j < cur_inst.INST_SIZE; ++j) {
             const auto& cur_token{cur_inst.token_arr[j]};
             if (cur_token.has_value()) {

@@ -67,6 +67,7 @@ namespace parser_mod {
             std::expected<void, ParseErr> set_state(); //:D
             std::expected<void, ParseErr> set_action(); //:D
             std::expected<void, ParseErr> execute(instruction_mod::Pipeline& pipeline); //:D
+            bool inst_type_already_opcode();
 
     };
 
