@@ -82,25 +82,31 @@ namespace analyzer_mod {
     //scouting labels as first pass
     std::expected<void, SemErr> Analyzer::scout_lbl(instruction_mod::Inst& inst) {
         auto& first_token{inst.token_arr[0]};
+        bool label_too_long {false};
+        if (inst.used_size > 1) label_too_long = true;
         if (!first_token.has_value()) { //check if first token exists, should not happen ideally but still
             return std::unexpected(SemErr::MissingOpCodeError);
         } else {
             switch (first_token->token_type) {
                 case TT::Label:
-                    return std::visit(overload{
-                        [this, &inst](std::string val) -> std::expected<void, SemErr> {
-                            auto [_, result] = label_table.insert(val);
-                            if (!result) {
-                                return std::unexpected(SemErr::LabelAlreadyExists);
+                    if (label_too_long) {
+                        return std::unexpected(SemErr::LabelTooLongError); //if extra operands apart from just the label
+                    } else {
+                        return std::visit(overload{
+                            [this, &inst](std::string val) -> std::expected<void, SemErr> {
+                                auto [_, result] = label_table.insert(val);
+                                if (!result) {
+                                    return std::unexpected(SemErr::LabelAlreadyExists);
+                                }
+                                inst.inst_type = instruction_mod::InstType::LBL;
+                                return {};
+                            },
+                            [this](auto) -> std::expected<void, SemErr> {
+                                std::abort();
+                                return std::unexpected(SemErr::UnknownSemanticError);
                             }
-                            inst.inst_type = instruction_mod::InstType::LBL;
-                            return {};
-                        },
-                        [this](auto) -> std::expected<void, SemErr> {
-                            std::abort();
-                            return std::unexpected(SemErr::UnknownSemanticError);
-                        }
-                    }, first_token->value);
+                        }, first_token->value);
+                    }
                     //add label to symbol table
                 default: //ignore otherwise (for now)
                     return {};

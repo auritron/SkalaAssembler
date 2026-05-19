@@ -48,6 +48,8 @@ std::string_view Error::fmt_error_as_str() {
                     return "Memory address in instruction is out of range";
                 case SemanticError::LabelAlreadyExists:
                     return "Specified Label has already been defined";
+                case SemanticError::LabelTooLongError:
+                    return "Specified Label should not have extra operards";
                 case SemanticError::UndefinedLabelError:
                     return "Specified Label has not yet been defined, but is used";
                 case SemanticError::UnknownSemanticError:

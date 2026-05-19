@@ -29,6 +29,7 @@ namespace error {
         ImmediateOutOfRange,
         AddressOutOfRange,
         LabelAlreadyExists,
+        LabelTooLongError,
         UndefinedLabelError,
     };
 
