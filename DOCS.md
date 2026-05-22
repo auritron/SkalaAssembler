@@ -99,8 +99,8 @@ CLR
 - R - 000  
 - I - 001  
 - M - 010  
-- S - 011  
-- J - 100  
+- J - 011  
+- S - 100  
 - N - 101  
 
 ## OpCodes - (3 bits from instruction type + 5 bits for instruction)

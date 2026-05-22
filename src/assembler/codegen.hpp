@@ -31,7 +31,7 @@ namespace codegen_mod {
             uint32_t encode_N(uint8_t opcode);
             void write_magic(std::ofstream& output, uint32_t MAGIC_NUM);
             void write_inst(std::ofstream& output, uint32_t encoded_bytes);
-            void generate(std::ofstream& output, const instruction_mod::Inst& inst);
+            void generate(std::ofstream& output, const instruction_mod::Inst& inst, const std::unordered_map<std::string, size_t>& lbl_table);
 
     };
 
