@@ -5,6 +5,8 @@
 namespace codegen_mod {
 
     using instruction_mod::OpCode;
+    using instruction_mod::TokenType;
+    using instruction_mod::InstType;
 
     const std::unordered_map<OpCode, uint8_t> opcode_mapping {
         // R/I-types
@@ -57,6 +59,91 @@ namespace codegen_mod {
         var_table{}
     { }
 
+    uint8_t CodeGen::encode_tkn_u8(const instruction_mod::Token& token) {
+        switch (token.token_type) {
+            case TokenType::OpCode:
+                return std::visit(overload{
+                    [](OpCode val) {
+                        auto map_res = opcode_mapping.find(val);
+                        if (map_res == opcode_mapping.end()) { 
+                            panic::panic();
+                            return static_cast<std::uint8_t>(0);
+                        } else {
+                            return map_res->second;
+                        } 
+                    },
+                    [](auto) { 
+                        panic::panic();
+                        return static_cast<std::uint8_t>(0);
+                    }
+                }, token.value);
+            case TokenType::Register:
+                return std::visit(overload{
+                    [](int val) { return val; },
+                    [](auto) {
+                        panic::panic(); 
+                        return static_cast<std::uint8_t>(0);
+                    }
+                }, token.value);
+            default:
+                panic::panic();
+                return 0;
+        }
+    }
+    
+    uint16_t CodeGen::encode_tkn_u16(const instruction_mod::Token& token, const std::unordered_map<std::string, size_t>& lbl_table) {
+        switch (token.token_type) {
+            case TokenType::Address:
+                return std::visit(overload{
+                    [](int val) { return val; },
+                    [](auto) {
+                        panic::panic();
+                        return static_cast<std::uint16_t>(0);
+                    }
+                }, token.value);
+            case TokenType::Variable:
+                return std::visit(overload{
+                    [this](std::string val) {
+                        auto var_res = var_table.find(val);
+                        if (var_res == var_table.end()) { 
+                            var_table.insert({val, next_unused_adr++});
+                            return static_cast<uint16_t>(next_unused_adr);
+                        } else {
+                            return static_cast<uint16_t>(var_res->second);
+                        }
+                    },
+                    [](auto) {
+                        panic::panic();
+                        return static_cast<std::uint16_t>(0);
+                    }
+                }, token.value);
+            case TokenType::Label:
+                return std::visit(overload{
+                    [this, &lbl_table](std::string val) {
+                        auto lbl_res = lbl_table.find(val);
+                        if (lbl_res == lbl_table.end()) { 
+                            panic::panic();
+                            return static_cast<std::uint16_t>(0);
+                        } else {
+                            return static_cast<uint16_t>(lbl_res->second);
+                        }
+                    },
+                    [](auto) {
+                        panic::panic();
+                        return static_cast<std::uint16_t>(0);
+                    }
+                }, token.value);
+            case TokenType::Immediate:
+                return std::visit(overload{
+                    [](int val) { return val; },
+                    [](auto) {
+                        panic::panic();
+                        return static_cast<std::uint16_t>(0);
+                    }
+                }, token.value);
+        }
+    }
+
     uint32_t CodeGen::encode_R(uint8_t opcode, uint8_t dest, uint8_t src1, uint8_t src2) {
         return (opcode << 24) | (dest << 20) | (src1 << 16) | (src2 << 12);
     }
@@ -81,31 +168,26 @@ namespace codegen_mod {
         return (opcode << 24);
     }
 
+    void CodeGen::write_magic(std::ofstream& output, uint32_t MAGIC_NUM) {
+
+    }
+
     void CodeGen::write_inst(std::ofstream& output, uint32_t encoded_bytes) {
 
     }
 
     void CodeGen::generate(std::ofstream& output, const instruction_mod::Inst& inst) {
         uint32_t encoded_inst{0};
-        uint32_t encoded_opcode{0};
-        switch (inst.inst_type) {
-            case instruction_mod::InstType::R:
-            case instruction_mod::InstType::I:
-            case instruction_mod::InstType::M:
-            case instruction_mod::InstType::J:
-            case instruction_mod::InstType::S:
-            case instruction_mod::InstType::N:
-                std::visit(overload{
-                    [&inst, &encoded_opcode](OpCode oc) {
-                        auto map_res = opcode_mapping.find(oc);
-                        if (map_res == opcode_mapping.end()) { 
-                            panic::panic();
-                        } else {
-                            encoded_opcode = map_res->second;
-                        } 
-                    },
-                    [](auto) { panic::panic(); }
-                }, inst.token_arr[0]->value);
+        switch (inst.inst_type) { //encode instruction based on type
+            case InstType::R:
+                uint8_t encoded_opcode = encode_tkn_u8(inst.token_arr[0].value());
+                if (inst.used_size == 3) { 
+                    encoded_inst = encode_R();
+                } else if (inst.used_size == 2) {
+                    encoded_inst = encode_R();
+                } else {
+                    panic::panic();
+                }
         }
     }
 

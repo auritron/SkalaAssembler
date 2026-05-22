@@ -15,6 +15,7 @@
 namespace assembler_mod {
     
     inline constexpr std::string_view prog_name = "demo";
+    inline constexpr uint32_t MAGIC_NUM = 0x3cDEC0DE;
 
     class Assembler {
 
