@@ -99,7 +99,7 @@ namespace analyzer_mod {
                     } else {
                         return std::visit(overload{
                             [this, &inst, &label_table](std::string val) -> std::expected<void, SemErr> {
-                                auto [_, result] = label_table.insert(std::make_pair(val, priv_inst_count+1));
+                                auto [_, result] = label_table.insert(std::make_pair(val, priv_inst_count * 4));
                                 if (!result) {
                                     return std::unexpected(SemErr::LabelAlreadyExists);
                                 }

@@ -48,9 +48,20 @@ void Assembler::assemble_prog(instruction_mod::Pipeline& pipeline, const std::st
     }
 
     if (!error_detected) { //only do codegen if no errors are detected
+        std::cout << "Errors not detected. Code generation started.\n";
+        auto codegen = codegen_mod::CodeGen();
+        fs::path source_dir = fs::path(__FILE__).parent_path().parent_path().parent_path();
         std::string filename = std::string(assembler_mod::prog_name) + ".bin";
-        std::ofstream output(filename, std::ios::binary);
-        //generate code
+        fs::path filepath = source_dir / "progs" / filename;
+        std::cout << filepath << std::endl;
+        std::ofstream output(filepath, std::ios::binary);
+        codegen.write_magic(output, MAGIC_NUM);
+        for (const auto& inst : pipeline) {
+            codegen.generate(output, inst, label_table);
+        }
+        std::cout << "Code generation successfully completed.\n";
+    } else {
+        std::cout << "Errors detected. Code generation did not start.\n";
     }
 
 }

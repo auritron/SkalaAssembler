@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <iostream>
+#include <filesystem>
 #include <fstream>
 #include <magic_enum/magic_enum.hpp> //debugging
 
@@ -11,6 +12,8 @@
 #include "parser.hpp"
 #include "analyzer.hpp"
 #include "codegen.hpp"
+
+namespace fs = std::filesystem;
 
 namespace assembler_mod {
     

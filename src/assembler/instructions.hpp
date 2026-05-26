@@ -132,7 +132,7 @@ namespace instruction_mod {
             static constexpr size_t MAX_REG_COUNT = 16;
             static constexpr int MAX_ADDR_VAL = 65535;
             static constexpr int MAX_IMM_VAL = 65535;
-            static constexpr size_t ADR_OFFSET = 100; //preallocated memory
+            static constexpr size_t ADR_OFFSET = 0x0100; //preallocated memory
             size_t used_size;
             InstType inst_type;
             std::optional<size_t> inst_no;

@@ -86,7 +86,7 @@ namespace codegen_mod {
                 }, token.value);
             case TokenType::Register:
                 return std::visit(overload{
-                    [](int val) { return val; },
+                    [](int val) { return static_cast<std::uint8_t>(val); },
                     [](auto) {
                         panic::panic(); 
                         return static_cast<std::uint8_t>(0);
@@ -96,13 +96,14 @@ namespace codegen_mod {
                 panic::panic();
                 return 0;
         }
+        return 0;
     }
     
     uint16_t CodeGen::encode_tkn_u16(const instruction_mod::Token& token, const std::unordered_map<std::string, size_t>& lbl_table) {
         switch (token.token_type) {
             case TokenType::Address:
                 return std::visit(overload{
-                    [](int val) { return val; },
+                    [](int val) { return static_cast<std::uint16_t>(val); },
                     [](auto) {
                         panic::panic();
                         return static_cast<std::uint16_t>(0);
@@ -143,13 +144,14 @@ namespace codegen_mod {
                 }, token.value);
             case TokenType::Immediate:
                 return std::visit(overload{
-                    [](int val) { return val; },
+                    [](int val) { return static_cast<std::uint16_t>(val); },
                     [](auto) {
                         panic::panic();
                         return static_cast<std::uint16_t>(0);
                     }
                 }, token.value);
         }
+        return 0;
     }
 
     uint32_t CodeGen::encode_R(uint8_t instr, uint8_t dest, uint8_t src1, uint8_t src2) {
@@ -198,9 +200,13 @@ namespace codegen_mod {
 
     void CodeGen::generate(std::ofstream& output, const instruction_mod::Inst& inst, const std::unordered_map<std::string, size_t>& lbl_table) {
         uint32_t encoded_inst{0};
+        uint8_t enc_opcode{0};
+        uint8_t enc_reg{0};
+        uint16_t enc_adr{0};
+        uint16_t enc_lbl{0};
         switch (inst.inst_type) { //encode instruction based on type
             case InstType::R:
-                uint8_t enc_opcode = encode_tkn_u8(inst.token_arr[0].value());
+                enc_opcode = encode_tkn_u8(inst.token_arr[0].value());
                 if (inst.used_size == 4) { 
                     uint8_t enc_dest = encode_tkn_u8(inst.token_arr[1].value());
                     uint8_t enc_src1 = encode_tkn_u8(inst.token_arr[2].value());
@@ -215,7 +221,7 @@ namespace codegen_mod {
                 }
                 break;
             case InstType::I:
-                uint8_t enc_opcode = encode_tkn_u8(inst.token_arr[0].value());
+                enc_opcode = encode_tkn_u8(inst.token_arr[0].value());
                 if (inst.used_size == 4) { 
                     uint8_t enc_dest = encode_tkn_u8(inst.token_arr[1].value());
                     uint8_t enc_src = encode_tkn_u8(inst.token_arr[2].value());
@@ -230,23 +236,23 @@ namespace codegen_mod {
                 }
                 break;
             case InstType::M:
-                uint8_t enc_opcode = encode_tkn_u8(inst.token_arr[0].value());
-                uint8_t enc_reg = encode_tkn_u8(inst.token_arr[1].value());
-                uint16_t enc_adr = encode_tkn_u16(inst.token_arr[2].value(), lbl_table);
+                enc_opcode = encode_tkn_u8(inst.token_arr[0].value());
+                enc_reg = encode_tkn_u8(inst.token_arr[1].value());
+                enc_adr = encode_tkn_u16(inst.token_arr[2].value(), lbl_table);
                 encoded_inst = encode_M(enc_opcode, enc_reg, enc_adr);
                 break;
             case InstType::J:
-                uint8_t enc_opcode = encode_tkn_u8(inst.token_arr[0].value());
-                uint16_t enc_lbl = encode_tkn_u16(inst.token_arr[1].value(), lbl_table);
+                enc_opcode = encode_tkn_u8(inst.token_arr[0].value());
+                enc_lbl = encode_tkn_u16(inst.token_arr[1].value(), lbl_table);
                 encoded_inst = encode_J(enc_opcode, enc_lbl);
                 break;
             case InstType::S:
-                uint8_t enc_opcode = encode_tkn_u8(inst.token_arr[0].value());
-                uint8_t enc_reg = encode_tkn_u8(inst.token_arr[1].value());
+                enc_opcode = encode_tkn_u8(inst.token_arr[0].value());
+                enc_reg = encode_tkn_u8(inst.token_arr[1].value());
                 encoded_inst = encode_S(enc_opcode, enc_reg);
                 break;
             case InstType::N:
-                uint8_t enc_opcode = encode_tkn_u8(inst.token_arr[0].value());
+                enc_opcode = encode_tkn_u8(inst.token_arr[0].value());
                 encoded_inst = encode_N(enc_opcode);
                 break;
             case InstType::LBL:
