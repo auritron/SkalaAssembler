@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <stdexcept>
+#include <charconv>
 #include <expected>
 
 #include "instructions.hpp"
