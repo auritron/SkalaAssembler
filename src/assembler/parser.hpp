@@ -57,9 +57,9 @@ namespace parser_mod {
             size_t inst_count;
             instruction_mod::Inst cur_inst;
             unsigned char cur_ch;
-            size_t ch_count;    //characters counted from input
             size_t line_count;
             size_t col_count;
+            size_t tkn_start_char_col;
             
         public:
             

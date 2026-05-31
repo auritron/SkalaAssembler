@@ -31,9 +31,9 @@ namespace parser_mod {
         inst_count{0},
         cur_inst(),
         cur_ch{0},
-        ch_count{0},
         line_count{1},
-        col_count{0}
+        col_count{0},
+        tkn_start_char_col{0}
     { }
 
     std::expected<void, ParseErr> Parser::set_state() {
@@ -324,6 +324,7 @@ namespace parser_mod {
                 }
                 break;
             case StateType::None:
+                tkn_start_char_col = col_count;
                 switch ( state_map.at(cur_state) ) {
                     case StateType::None:
                         cur_action = Action::Idle;
@@ -352,10 +353,13 @@ namespace parser_mod {
             
             switch (prev_state) {
                 case State::Idn:
-                    try {
-                        token = instruction_mod::Token(instruction_mod::TokenType::OpCode, instruction_mod::instruction_map.at(buffer)); //tt
-                    } catch (const std::out_of_range& e) {
-                        token = instruction_mod::Token(instruction_mod::TokenType::Variable, buffer); //sv
+                    {
+                        auto res = instruction_mod::instruction_map.find(buffer);
+                        if (res != instruction_mod::instruction_map.end()) {
+                            token = instruction_mod::Token(instruction_mod::TokenType::OpCode, res->second, line_count, tkn_start_char_col);
+                        } else {
+                            token = instruction_mod::Token(instruction_mod::TokenType::Variable, buffer, line_count, tkn_start_char_col);
+                        }
                     }
                     break;
                 case State::Reg:
@@ -368,7 +372,7 @@ namespace parser_mod {
                         auto [ptr, errc] = std::from_chars(start_char, end_char, val);
                         
                         if (errc == std::errc::invalid_argument || ptr != end_char) { //shouldnt happen ideally
-                            token = instruction_mod::Token(instruction_mod::TokenType::Invalid, 0);
+                            token = instruction_mod::Token(instruction_mod::TokenType::Invalid, 0, line_count, tkn_start_char_col);
                         } else if (errc == std::errc::result_out_of_range) { //value is too big to parse
                             switch (prev_state) {
                                 case State::Reg: return std::unexpected(ParseErr::RegisterOutOfRange); break;
@@ -376,8 +380,12 @@ namespace parser_mod {
                             }
                         } else { //success
                             switch (prev_state) {
-                                case State::Reg: token = instruction_mod::Token(instruction_mod::TokenType::Register, val); break; //account for error handling
-                                case State::Imm: token = instruction_mod::Token(instruction_mod::TokenType::Immediate, val); break;
+                                case State::Reg: 
+                                    token = instruction_mod::Token(instruction_mod::TokenType::Register, val, line_count, tkn_start_char_col); 
+                                    break; //account for error handling
+                                case State::Imm: 
+                                    token = instruction_mod::Token(instruction_mod::TokenType::Immediate, val, line_count, tkn_start_char_col); 
+                                    break;
                             }
                         }
                     }
@@ -391,20 +399,24 @@ namespace parser_mod {
                         auto [ptr, errc] = std::from_chars(start_char, end_char, val);
 
                         if (errc == std::errc::invalid_argument || ptr != end_char) { //shouldn't happen ideally
-                            token = instruction_mod::Token(instruction_mod::TokenType::Invalid, 0);
+                            token = instruction_mod::Token(instruction_mod::TokenType::Invalid, 0, line_count, tkn_start_char_col);
                         } else if (errc == std::errc::result_out_of_range) { //too big to parse
                             return std::unexpected(ParseErr::AddressOutOfRange);
                         } else { //success
-                            token = instruction_mod::Token(instruction_mod::TokenType::Address, val);
+                            token = instruction_mod::Token(instruction_mod::TokenType::Address, val, line_count, tkn_start_char_col);
                         }
                     }
 
                     break;
                 case State::Lbl:
-                    token = instruction_mod::Token(instruction_mod::TokenType::Label, buffer.substr(1));
+                    {
+                        token = instruction_mod::Token(instruction_mod::TokenType::Label, buffer.substr(1), line_count, tkn_start_char_col);
+                    } 
                     break;
                 default:
-                    panic::panic();
+                    {
+                        panic::panic();
+                    }
             }
             
             if (!cur_inst.push_token(std::move(token))) return std::unexpected(ParseErr::InstructionTooLong); //move happens here 

@@ -87,13 +87,13 @@ namespace instruction_mod {
     };
 
     Token::Token() : 
-        token_type{TokenType::Invalid}, value{0} { }
-    Token::Token(TokenType type, OpCode val) :
-        token_type{type}, value{val} { }
-    Token::Token(TokenType type, int val) :
-        token_type{type}, value{val} { }
-    Token::Token(TokenType type, std::string val) :
-        token_type{type}, value{val} { }
+        token_type{TokenType::Invalid}, value{0}, file_line{0}, file_col{0} { }
+    Token::Token(TokenType type, OpCode val, size_t f_line, size_t f_col) :
+        token_type{type}, value{val}, file_line{f_line}, file_col{f_col} { }
+    Token::Token(TokenType type, int val, size_t f_line, size_t f_col) :
+        token_type{type}, value{val}, file_line{f_line}, file_col{f_col} { }
+    Token::Token(TokenType type, std::string val, size_t f_line, size_t f_col) :
+        token_type{type}, value{val}, file_line{f_line}, file_col{f_col} { }
 
     TokenOpt::TokenOpt(TokenType token) :
         token_opt_list(std::move(token))

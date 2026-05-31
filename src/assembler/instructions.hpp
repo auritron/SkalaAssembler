@@ -103,10 +103,13 @@ namespace instruction_mod {
             using TokenDataType = std::variant<OpCode, int, std::string>;
             TokenDataType value;
 
+            size_t file_line;
+            size_t file_col;
+
             Token();
-            Token(TokenType type, OpCode val);
-            Token(TokenType type, int val);
-            Token(TokenType type, std::string val);
+            Token(TokenType type, OpCode val, size_t f_line, size_t f_col);
+            Token(TokenType type, int val, size_t f_line, size_t f_col);
+            Token(TokenType type, std::string val, size_t f_line, size_t f_col);
             
     };
 
