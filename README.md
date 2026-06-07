@@ -1,2 +1,2 @@
 # SkalaISA
-Simple ISA and process VM project
+Simple Scalable Assembler
