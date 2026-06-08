@@ -1,2 +1,3 @@
-# SkalaISA
-Simple ISA and process VM project
+# SkalaAssembler
+Simple, modular and minimalist ISA + Assembler
+
