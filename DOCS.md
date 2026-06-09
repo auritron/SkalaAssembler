@@ -43,53 +43,51 @@ Opcode - 3 bits for type + 5 bits for instruction (8 bits total)
 
 # Instruction Opcodes
 
-## memory and registers
-LOAD Rdst, ADRsrc  
-SEND Rsrc, ADRdst  
-SET  Rdst, Rsrc  
+## Memory and Registers
+LOAD Rdst ADRsrc  
+SEND Rsrc ADRdst  
+SET  Rdst Rsrc  
 
-## bitwise
-NOT  Rdst, Rax  
-AND  Rdst, Rax, Rbx  
-OR   Rdst, Rax, Rbx  
-XOR  Rdst, Rax, Rbx  
+## Bitwise
+NOT  Rdst Rax  
+AND  Rdst Rax Rbx  
+OR   Rdst Rax Rbx  
+XOR  Rdst Rax Rbx  
 
-## shift and rotation
-STL  Rdst, Rax  
-STR  Rdst, Rax  
-RTL  Rdst, Rax  
-RTR  Rdst, Rax  
+## Shift and Rotation
+STL  Rdst Rax Rbx   
+STR  Rdst Rax Rbx  
+RTL  Rdst Rax Rbx  
+RTR  Rdst Rax Rbx  
 
-## arithmetic
-NEG  Rdst, Rax  
-ADD  Rdst, Rax, Rbx  
-SUB  Rdst, Rax, Rbx  
-MUL  Rdst, Rax, Rbx  
-DIV  Rdst, Rax, Rbx  
-MOD  Rdst, Rax, Rbx  
+## Arithmetic
+NEG  Rdst Rax  
+ADD  Rdst Rax Rbx  
+SUB  Rdst Rax Rbx  
+MUL  Rdst Rax Rbx  
+DIV  Rdst Rax Rbx  
+MOD  Rdst Rax Rbx  
 
-## comparison and branching
-CMP  Rax, Rbx  
+## Comparison and Bbranching
+CMP  Rax Rbx  
 GOTO @LBL  
 WEQ  @LBL  
-WNE  @LBL
+WNE  @LBL  
 WGT  @LBL  
 WLT  @LBL  
 WCY  @LBL  
 WOV  @LBL  
 WDZ  @LBL  
 
-## stacks and sub-routines
+## Stacks and Sub-routines
 CAL  @LBL  
 RET  
 PUSH Rsrc
 POP  Rdst
 
-## i/o
+## Misc. and Debugging
 PRINT  Rsrc
 PRINTC Rsrc
-
-## misc. and debugging
 END  
 CLR  
 
